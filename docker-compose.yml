@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  backend:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "9001:80"
+    volumes:
+      - ./logs:/root/.npm/_logs
+    depends_on:
+      - "p2s-psql"
+  p2s-psql:
+    image: postgres:alpine3.14
+    restart: unless-stopped
+    environment:
+      - "POSTGRES_PASSWORD=1234"
+    volumes:
+      - ./test/psql:/docker-entrypoint-initdb.d
