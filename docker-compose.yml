@@ -4,6 +4,8 @@ services:
   backend:
     build: .
     restart: unless-stopped
+    environment:
+      - "API_KEY=${APIKEY}"
     ports:
       - "9001:80"
     volumes:

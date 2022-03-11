@@ -4,6 +4,8 @@
 const router = require('koa-router')();
 const db = require('./db');
 
+const GLOBAL_API_KEY = process.env.API_KEY;
+
 // GET /api/user/:id
 // gets user details + interested meatups
 router.get('/:id', async (ctx, next) => {
@@ -28,15 +30,23 @@ router.get('/:id', async (ctx, next) => {
 // POST /api/user
 // create a new user
 router.post('/', async (ctx, next) => {
-    // TODO: actually create a new user
     var requestBody = ctx.request.body;
     if(requestBody){
         if(typeof requestBody == 'string'){
             requestBody = JSON.parse(requestBody);
         }
-        if('name' in requestBody){
-            // TODO: finish this line
-            await db.query('insert into users(display_name
+        if(('key' in requestBody) && ('name' in requestBody)){
+            if(requestBody.key === GLOBAL_API_KEY){
+                // TODO: handle when insert query fails...though I'm not sure it ever would
+                const {rows} = await db.query('insert into users(display_name) values($1) returning id', [requestBody.name]);
+                ctx.response.status = 200;
+                ctx.response.body = {
+                    id: rows[0].id,
+                    name: requestBody.name
+                };
+            }else{
+                ctx.response.status = 400;
+            }
         }else{
             ctx.response.status = 400;
         }
