@@ -5,20 +5,20 @@ create table meatup(
     datetime_added  timestamptz not null default now(),
     datetime_start  timestamptz not null,
     datetime_end    timestamptz not null,
-    latitude        int,
-    longitude       int,
-    owner           varchar(512) not null,
+    latitude        numeric(20, 16) not null,
+    longitude       numeric(20, 16) not null,
+    owner           uuid not null,
     primary key(id)
 );
 
 create table users(
-    id              varchar(512) not null,
+    id              uuid default gen_random_uuid(),
     display_name    varchar(512) not null,
     primary key(id)
 );
 
 create table interested(
-    user_id         varchar(512) not null,
+    user_id         uuid not null,
     meatup_id       int not null
 );
 
