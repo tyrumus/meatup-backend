@@ -10,16 +10,14 @@ const util = require('./cookie-utils.js');
 router.get('/:id', async (ctx, next) => {
     const userID = await util.verify(ctx);
     if(userID){
-        const meatupResult = await db.query('select * from meatup where id = $1', [ctx.params.id]);
+        // TODO: TEST THIS: return display_name of owner
+        const meatupResult = await db.query('select *,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.id = $1', [ctx.params.id]);
         if(meatupResult.rowCount > 0){
-            const interestedResult = await db.query('select user_id from interested where meatup_id = $1', [ctx.params.id]);
-            var interested = [];
-            for(var i = 0; i < interestedResult.rowCount; i++){
-                interested.push(interestedResult.rows[i].user_id);
-            }
+            // TODO: TEST THIS: return display_name of each interested user
+            const interestedResult = await db.query('select interested.user_id,users.display_name from interested left outer join users on users.id = interested.user_id where meatup_id = $1', [ctx.params.id]);
 
             var meatupData = meatupResult.rows[0];
-            meatupData.interested = interested;
+            meatupData.interested = interestedResult.rows;
             ctx.response.status = 200;
             ctx.response.body = meatupData;
         }else{
@@ -79,8 +77,8 @@ router.post('/list', async (ctx, next) => {
                 'longitude_high'
             ];
             if(meatupKeys.every(function(o){return o in requestBody;})){
-                // TODO: return owner's display name in addition to uuid (left outer join)
-                const result = await db.query('select id,title,description,datetime_start,owner from meatup where latitude >= $1 and latitude <= $2 and longitude >= $3 and longitude <= $4', [requestBody.latitude_low, requestBody.latitude_high, requestBody.longitude_low, requestBody.longitude_high]);
+                // TODO: TEST THIS: return owner's display name in addition to uuid (left outer join)
+                const result = await db.query('select meatup.id,meatup.title,meatup.description,meatup.datetime_start,meatup.owner,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.latitude >= $1 and meatup.latitude <= $2 and meatup.longitude >= $3 and meatup.longitude <= $4', [requestBody.latitude_low, requestBody.latitude_high, requestBody.longitude_low, requestBody.longitude_high]);
                 if(result.rowCount > 0){
                     ctx.response.status = 200;
                     ctx.response.body = result.rows;
@@ -137,7 +135,7 @@ router.post('/', async (ctx, next) => {
 });
 
 // PATCH /api/meatup/:id
-// update meatup details
+// update meatup details. NOTE: requires all fields present in request.
 router.patch('/:id', async (ctx, next) => {
     const userID = await util.verify(ctx);
     if(userID){

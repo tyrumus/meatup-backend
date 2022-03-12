@@ -13,7 +13,7 @@ router.get('/', async (ctx, next) => {
     const userID = await util.verify(ctx);
     if(userID){
         const userInfo = await db.query('select display_name from users where id = $1', [userID]);
-        const userInterests = await db.query('select meatup_id from interested where user_id = $1', [userID]);
+        const userInterests = await db.query('select interested.meatup_id,meatup.title,meatup.description,meatup.datetime_start from interested left outer join meatup on meatup.id = interested.meatup_id where interested.user_id = $1', [userID]);
         const ownedMeatups = await db.query('select * from meatup where owner = $1', [userID]);
         const userData = {
             name: userInfo.rows[0].display_name,
