@@ -12,7 +12,6 @@
         "koa-body": "^4.2.0",
         "koa-helmet": "^6.1.0",
         "koa-router": "^10.1.1",
-        "koa-session": "^6.2.0",
         "pg": "^8.7.1"
     },
     "browserslist": [
