@@ -3,7 +3,7 @@
 // load libraries
 const Koa = require('koa');
 const Router = require('koa-router');
-const koaBody = require('koa-body');
+const koaBody = require('koa-body')({multipart: true, uploadDir: '/cdn/tmp'});
 const helmet = require('koa-helmet');
 const db = require('./db');
 

@@ -122,7 +122,20 @@ router.post('/', async (ctx, next) => {
                 if(result.rowCount > 0){
                     ctx.response.status = 200;
                     ctx.response.body = result.rows[0];
+                    try {
+                        const {path, name, type} = ctx.request.files.meatupimg;
+                        const fileExtension = mime.extension(type);
+                        console.log('file uploaded');
+                        console.log(path);
+                        console.log(name);
+                        console.log(type);
+                        console.log(fileExtension);
+                        // TODO: move image to a different location.
+                    }catch(err){
+                        console.log('error ' + err.message);
+                    }
                 }else{
+                    // TODO:Handle when POST request fails, but image was still uploaded.
                     ctx.response.status = 400;
                 }
             }else{
