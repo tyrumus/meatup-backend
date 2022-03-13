@@ -4,6 +4,7 @@
 const router = require('koa-router')();
 const db = require('./db');
 const util = require('./cookie-utils.js');
+const mime = require('mime-types');
 
 // GET /api/meatup/:id
 // get specific meatup

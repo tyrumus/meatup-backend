@@ -3,7 +3,7 @@
 // load libraries
 const Koa = require('koa');
 const Router = require('koa-router');
-const koaBody = require('koa-body')({multipart: true, uploadDir: '/cdn/tmp'});
+const koaBody = require('koa-body');
 const helmet = require('koa-helmet');
 const db = require('./db');
 
@@ -36,7 +36,7 @@ for(var r of routeList){
 // add the following to the web app
 app
     // necessary for reading POST request body
-    .use(koaBody())
+    .use(koaBody({multipart: true, formidable: {uploadDir: '/cdn'}}))
     // free added security from koa-helmet
     .use(helmet())
     // add all defined routes in this file from koa-router
