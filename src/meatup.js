@@ -4,6 +4,9 @@
 const router = require('koa-router')();
 const db = require('./db');
 const util = require('./cookie-utils.js');
+const mime = require('mime-types');
+const fs = require('fs');
+const path = require('path');
 
 // GET /api/meatup/:id
 // get specific meatup
@@ -98,7 +101,6 @@ router.post('/list', async (ctx, next) => {
 
 // POST /api/meatup
 // create a new meatup
-// TODO: support image upload
 router.post('/', async (ctx, next) => {
     const userID = await util.verify(ctx);
     if(userID){
@@ -115,11 +117,22 @@ router.post('/', async (ctx, next) => {
                 'latitude',
                 'longitude'
             ];
-            if(meatupKeys.every(function(o){return o in requestBody;})){
+            if((meatupKeys.every(function(o){return o in requestBody;})) && (ctx.request.files) && (ctx.request.files.meatupimg)){
                 const result = await db.query('insert into meatup(' + meatupKeys.toString() + ', owner) values ($1, $2, to_timestamp($3), to_timestamp($4), $5, $6, $7) returning id', [requestBody.title, requestBody.description, requestBody.datetime_start, requestBody.datetime_end, requestBody.latitude, requestBody.longitude, userID]);
                 if(result.rowCount > 0){
                     ctx.response.status = 200;
                     ctx.response.body = result.rows[0];
+                    try {
+                        const {name, type} = ctx.request.files.meatupimg;
+                        const oldPath = ctx.request.files.meatupimg.path;
+                        const fileExtension = mime.extension(type);
+                        const meatupID = result.rows[0].id;
+                        fs.rename(oldPath, path.join('/cdn/public', meatupID.toString()), function(err){
+                            if (err) throw err
+                        });
+                    }catch(err){
+                        console.log('error ' + err.message);
+                    }
                 }else{
                     ctx.response.status = 400;
                 }
@@ -157,19 +170,15 @@ router.patch('/:id', async (ctx, next) => {
                 if(result.rowCount > 0){
                     ctx.response.status = 200;
                 }else{
-                    console.log("error 1");
                     ctx.response.status = 400;
                 }
             }else{
-                console.log("error 2");
                 ctx.response.status = 400;
             }
         }else{
-            console.log("error 3");
             ctx.response.status = 400;
         }
     }else{
-        console.log("error 4");
         ctx.response.status = 400;
     }
 });

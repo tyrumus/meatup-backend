@@ -12,6 +12,9 @@
         "koa-body": "^4.2.0",
         "koa-helmet": "^6.1.0",
         "koa-router": "^10.1.1",
+        "koa-static": "^5.0.0",
+        "koa-mount": "^4.0.0",
+        "mime-types": "^2.1.35",
         "pg": "^8.7.1"
     },
     "browserslist": [

@@ -1,0 +1,9 @@
+**/*.md
+**/*.sh
+.gitignore
+.git
+logs/
+cdn/
+test/
+docker-compose.yml
+.env

@@ -10,6 +10,7 @@ services:
       - "9001:80"
     volumes:
       - ./logs:/root/.npm/_logs
+      - ./cdn:/cdn
     depends_on:
       - "p2s-psql"
   p2s-psql:
