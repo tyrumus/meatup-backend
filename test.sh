@@ -10,8 +10,8 @@ curl -b /tmp/meatup-cookiefile "http://localhost:9001/api/user"
 echo "meatup.js tests"
 TIME=$(date +%s)
 echo "add meatups"
-curl -X POST -b /tmp/meatup-cookiefile -F "title=Your Mother" -F "description=is super super gay and putin likes it" -F "datetime_start=${TIME}" -F "datetime_end=${TIME}" -F "latitude=64.412608" -F "longitude=-17.719234" -F "meatupimg=@./pfp.png" "http://localhost:9001/api/meatup"
-exit 0
+curl -X POST -b /tmp/meatup-cookiefile -F "title=Your mom" -F "description=is super super gay and putin likes it" -F "datetime_start=${TIME}" -F "datetime_end=${TIME}" -F "latitude=64.412608" -F "longitude=-17.719234" -F "meatupimg=@./pfp.png" "http://localhost:9001/api/meatup"
+curl -X POST -b /tmp/meatup-cookiefile -F "title=Your mother" -F "description=is super super gay and putin likes it" -F "datetime_start=${TIME}" -F "datetime_end=${TIME}" -F "latitude=64.412608" -F "longitude=-17.719234" -F "meatupimg=@./pfp.png" "http://localhost:9001/api/meatup"
 curl -X POST -b /tmp/meatup-cookiefile -d "title=Your Father&description=is very straight&datetime_start=${TIME}&datetime_end=${TIME}&latitude=32.41260842069&longitude=-17.6969420" "http://localhost:9001/api/meatup"
 echo "list meatups"
 curl -X POST -b /tmp/meatup-cookiefile -d "latitude_low=30&latitude_high=34&longitude_low=-18&longitude_high=-14" "http://localhost:9001/api/meatup/list"
