@@ -46,6 +46,7 @@ router.post('/', async (ctx, next) => {
                 const {rows} = await db.query('insert into users(display_name) values($1) returning id', [requestBody.name]);
                 util.set(ctx, rows[0].id);
                 ctx.response.status = 200;
+                ctx.response.body = {id: rows[0].id};
             }else{
                 ctx.response.status = 400;
             }
