@@ -82,12 +82,8 @@ router.post('/list', async (ctx, next) => {
             if(meatupKeys.every(function(o){return o in requestBody;})){
                 // TODO: TEST THIS: return owner's display name in addition to uuid (left outer join)
                 const result = await db.query('select meatup.id,meatup.title,meatup.description,meatup.datetime_start,meatup.owner,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.latitude >= $1 and meatup.latitude <= $2 and meatup.longitude >= $3 and meatup.longitude <= $4', [requestBody.latitude_low, requestBody.latitude_high, requestBody.longitude_low, requestBody.longitude_high]);
-                if(result.rowCount > 0){
-                    ctx.response.status = 200;
-                    ctx.response.body = result.rows;
-                }else{
-                    ctx.response.status = 400;
-                }
+                ctx.response.status = 200;
+                ctx.response.body = result.rows;
             }else{
                 ctx.response.status = 400;
             }
