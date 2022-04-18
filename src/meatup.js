@@ -8,19 +8,27 @@ const mime = require('mime-types');
 const fs = require('fs');
 const path = require('path');
 
+function toUnixTime(dateString){
+    return parseInt((new Date(dateString).getTime() / 1000).toFixed(0));
+}
+
 // GET /api/meatup/:id
 // get specific meatup
 router.get('/:id', async (ctx, next) => {
     const userID = await util.verify(ctx);
     if(userID){
         // TODO: TEST THIS: return display_name of owner
-        const meatupResult = await db.query('select *,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.id = $1', [ctx.params.id]);
+        const meatupResult = await db.query('select meatup.id,meatup.title,meatup.description,meatup.datetime_start,meatup.datetime_end,meatup.latitude,meatup.longitude,meatup.owner,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.id = $1', [ctx.params.id]);
         if(meatupResult.rowCount > 0){
             // TODO: TEST THIS: return display_name of each interested user
+            const interestedCountResult = await db.query('select count(distinct user_id) from interested where meatup_id = $1', [ctx.params.id]);
             const interestedResult = await db.query('select interested.user_id,users.display_name from interested left outer join users on users.id = interested.user_id where meatup_id = $1', [ctx.params.id]);
 
-            var meatupData = meatupResult.rows[0];
-            meatupData.interested = interestedResult.rows;
+            let meatupData = meatupResult.rows[0];
+            // meatupData.interested = interestedResult.rows;
+            meatupData.interested = interestedCountResult.rows[0].count;
+            meatupData.datetime_start = toUnixTime(meatupData.datetime_start);
+            meatupData.datetime_end = toUnixTime(meatupData.datetime_end);
             ctx.response.status = 200;
             ctx.response.body = meatupData;
         }else{
@@ -87,7 +95,14 @@ router.post('/list', async (ctx, next) => {
                 // TODO: TEST THIS: return owner's display name in addition to uuid (left outer join)
                 const result = await db.query('select meatup.id,meatup.title,meatup.description,meatup.datetime_start,meatup.datetime_end,meatup.latitude,meatup.longitude,meatup.owner,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.latitude >= $1 and meatup.latitude <= $2 and meatup.longitude >= $3 and meatup.longitude <= $4', [requestBody.latitude_low, requestBody.latitude_high, requestBody.longitude_low, requestBody.longitude_high]);
                 ctx.response.status = 200;
-                ctx.response.body = {meatup_list: result.rows};
+                let newRows = [];
+                for(let i = 0; i < result.rowCount; i++){
+                    let row = result.rows[i];
+                    row.datetime_start = toUnixTime(row.datetime_start);
+                    row.datetime_end = toUnixTime(row.datetime_end);
+                    newRows.push(row);
+                }
+                ctx.response.body = {meatup_list: newRows};
             }else{
                 ctx.response.status = 400;
             }
