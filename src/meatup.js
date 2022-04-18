@@ -39,8 +39,10 @@ router.post('/:id/interested', async (ctx, next) => {
         const result = await db.query('insert into interested(user_id, meatup_id) values ($1, $2)', [userID, ctx.params.id]);
         if(result.rowCount > 0){
             ctx.response.status = 200;
+            ctx.response.body = {generic_status: 200};
         }else{
             ctx.response.status = 400;
+            ctx.response.body = {generic_status: 400};
         }
     }else{
         ctx.response.status = 400;
@@ -55,8 +57,10 @@ router.delete('/:id/interested', async (ctx, next) => {
         const result = await db.query('delete from interested where user_id = $1 and meatup_id = $2', [userID, ctx.params.id]);
         if(result.rowCount > 0){
             ctx.response.status = 200;
+            ctx.response.body = {generic_status: 200};
         }else{
             ctx.response.status = 400;
+            ctx.response.body = {generic_status: 400};
         }
     }else{
         ctx.response.status = 400;
@@ -164,6 +168,7 @@ router.patch('/:id', async (ctx, next) => {
             if(meatupKeys.every(function(o){return o in requestBody;})){
                 const result = await db.query('update meatup set title = $1, description = $2, datetime_start = to_timestamp($3), datetime_end = to_timestamp($4), latitude = $5, longitude = $6 where id = $7', [requestBody.title, requestBody.description, requestBody.datetime_start, requestBody.datetime_end, requestBody.latitude, requestBody.longitude, ctx.params.id]);
                 if(result.rowCount > 0){
+                    ctx.response.body = {generic_status: 200};
                     ctx.response.status = 200;
                 }else{
                     ctx.response.status = 400;
@@ -187,6 +192,7 @@ router.delete('/:id', async (ctx, next) => {
         const result = await db.query('delete from meatup where id = $1', [ctx.params.id]);
         if(result.rowCount > 0){
             ctx.response.status = 200;
+            ctx.response.body = {generic_status: 200};
         }else{
             ctx.response.status = 400;
         }
