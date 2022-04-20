@@ -41,13 +41,13 @@ router.get('/:id', async (ctx, next) => {
 
 // GET /api/meatup/:id/interested
 // returns interest count of a meatup
-router.get('/interested', async (ctx, next) => {
+router.get('/:id/interestcount', async (ctx, next) => {
     const userID = await util.verify(ctx);
     if(userID){
-        const interestedCountResult = await db.query('select count(distinct user_id) from interested where meatup_id = $1', [ctx.query.id]);
+        const interestedCountResult = await db.query('select count(distinct user_id) from interested where meatup_id = $1', [ctx.params.id]);
         ctx.response.status = 200;
         if(interestedCountResult.rowCount > 0){
-            ctx.response.body = {interest_count: interestedCountResult.rows[0].count};
+            ctx.response.body = {interest_count: parseInt(interestedCountResult.rows[0].count)};
         }else{
             ctx.response.body = {interest_count: 0};
         }
