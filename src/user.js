@@ -7,22 +7,41 @@ const util = require('./cookie-utils.js');
 
 const GLOBAL_API_KEY = process.env.API_KEY;
 
+function toUnixTime(dateString){
+    return parseInt((new Date(dateString).getTime() / 1000).toFixed(0));
+}
+
 // GET /api/user
 // get own user's details + interested meatups + owned meatups
 router.get('/', async (ctx, next) => {
     const userID = await util.verify(ctx);
     if(userID){
         const userInfo = await db.query('select display_name from users where id = $1', [userID]);
-        const userInterests = await db.query('select interested.meatup_id as id,meatup.title,meatup.description,meatup.datetime_start,meatup.datetime_end,meatup.latitude,meatup.longitude,meatup.owner,users.display_name from interested inner join meatup on meatup.id = interested.meatup_id inner join users on users.id = meatup.owner where interested.user_id = $1', [userID]);
-        const ownedMeatups = await db.query('select meatup.id,meatup.title,meatup.description,meatup.datetime_start,meatup.datetime_end,meatup.latitude,meatup.longitude,meatup.owner,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.owner = $1', [userID]);
-        const userData = {
-            name: userInfo.rows[0].display_name,
-            interested_meatups: userInterests.rows,
-            owned_meatups: ownedMeatups.rows
-        };
-
         // ensure it's not empty
         if(userInfo.rowCount > 0){
+            const userInterests = await db.query('select interested.meatup_id as id,meatup.title,meatup.description,meatup.datetime_start,meatup.datetime_end,meatup.latitude,meatup.longitude,meatup.owner,users.display_name from interested inner join meatup on meatup.id = interested.meatup_id inner join users on users.id = meatup.owner where interested.user_id = $1', [userID]);
+            const ownedMeatups = await db.query('select meatup.id,meatup.title,meatup.description,meatup.datetime_start,meatup.datetime_end,meatup.latitude,meatup.longitude,meatup.owner,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.owner = $1', [userID]);
+            // reformat for Unix time
+            let newUserInterests = [];
+            let newOwnedMeatups = [];
+            for(let i = 0; i < userInterests.rowCount; i++){
+                let row = userInterests.rows[i];
+                row.datetime_start = toUnixTime(row.datetime_start);
+                row.datetime_end = toUnixTime(row.datetime_end);
+                newUserInterests.push(row);
+            }
+            for(let i = 0; i < ownedMeatups.rowCount; i++){
+                let row = ownedMeatups.rows[i];
+                row.datetime_start = toUnixTime(row.datetime_start);
+                row.datetime_end = toUnixTime(row.datetime_end);
+                newOwnedMeatups.push(row);
+            }
+            const userData = {
+                name: userInfo.rows[0].display_name,
+                interested_meatups: newUserInterests,
+                owned_meatups: newOwnedMeatups
+            };
+
             ctx.response.status = 200;
             ctx.response.body = userData;
         }else{
