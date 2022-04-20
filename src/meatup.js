@@ -21,18 +21,35 @@ router.get('/:id', async (ctx, next) => {
         const meatupResult = await db.query('select meatup.id,meatup.title,meatup.description,meatup.datetime_start,meatup.datetime_end,meatup.latitude,meatup.longitude,meatup.owner,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.id = $1', [ctx.params.id]);
         if(meatupResult.rowCount > 0){
             // TODO: TEST THIS: return display_name of each interested user
-            const interestedCountResult = await db.query('select count(distinct user_id) from interested where meatup_id = $1', [ctx.params.id]);
-            const interestedResult = await db.query('select interested.user_id,users.display_name from interested left outer join users on users.id = interested.user_id where meatup_id = $1', [ctx.params.id]);
+            // const interestedCountResult = await db.query('select count(distinct user_id) from interested where meatup_id = $1', [ctx.params.id]);
+            // const interestedResult = await db.query('select interested.user_id,users.display_name from interested left outer join users on users.id = interested.user_id where meatup_id = $1', [ctx.params.id]);
 
             let meatupData = meatupResult.rows[0];
             // meatupData.interested = interestedResult.rows;
-            meatupData.interested = interestedCountResult.rows[0].count;
+            // meatupData.interested = interestedCountResult.rows[0].count;
             meatupData.datetime_start = toUnixTime(meatupData.datetime_start);
             meatupData.datetime_end = toUnixTime(meatupData.datetime_end);
             ctx.response.status = 200;
             ctx.response.body = meatupData;
         }else{
             ctx.response.status = 400;
+        }
+    }else{
+        ctx.response.status = 400;
+    }
+});
+
+// GET /api/meatup/:id/interested
+// returns interest count of a meatup
+router.get('/interested', async (ctx, next) => {
+    const userID = await util.verify(ctx);
+    if(userID){
+        const interestedCountResult = await db.query('select count(distinct user_id) from interested where meatup_id = $1', [ctx.query.id]);
+        ctx.response.status = 200;
+        if(interestedCountResult.rowCount > 0){
+            ctx.response.body = {interest_count: interestedCountResult.rows[0].count};
+        }else{
+            ctx.response.body = {interest_count: 0};
         }
     }else{
         ctx.response.status = 400;
