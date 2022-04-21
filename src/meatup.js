@@ -113,8 +113,12 @@ router.post('/list', async (ctx, next) => {
                 const result = await db.query('select meatup.id,meatup.title,meatup.description,meatup.datetime_start,meatup.datetime_end,meatup.latitude,meatup.longitude,meatup.owner,users.display_name from meatup left outer join users on users.id = meatup.owner where meatup.latitude >= $1 and meatup.latitude <= $2 and meatup.longitude >= $3 and meatup.longitude <= $4', [requestBody.latitude_low, requestBody.latitude_high, requestBody.longitude_low, requestBody.longitude_high]);
                 ctx.response.status = 200;
                 let newRows = [];
+                let currentTime = new Date();
                 for(let i = 0; i < result.rowCount; i++){
                     let row = result.rows[i];
+                    if(currentTime > (new Date(row.datetime_end)){
+                        continue;
+                    }
                     row.datetime_start = toUnixTime(row.datetime_start);
                     row.datetime_end = toUnixTime(row.datetime_end);
                     newRows.push(row);
@@ -153,7 +157,8 @@ router.post('/', async (ctx, next) => {
                 const result = await db.query('insert into meatup(' + meatupKeys.toString() + ', owner) values ($1, $2, to_timestamp($3), to_timestamp($4), $5, $6, $7) returning id', [requestBody.title, requestBody.description, requestBody.datetime_start, requestBody.datetime_end, requestBody.latitude, requestBody.longitude, userID]);
                 if(result.rowCount > 0){
                     ctx.response.status = 200;
-                    ctx.response.body = result.rows[0];
+                    // ctx.response.body = result.rows[0];
+                    ctx.response.body = {generic_status: 200};
                     try {
                         const {name, type} = ctx.request.files.meatupimg;
                         const oldPath = ctx.request.files.meatupimg.path;
