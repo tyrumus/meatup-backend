@@ -116,7 +116,7 @@ router.post('/list', async (ctx, next) => {
                 let currentTime = new Date();
                 for(let i = 0; i < result.rowCount; i++){
                     let row = result.rows[i];
-                    if(currentTime > (new Date(row.datetime_end))){
+                    if(currentTime.getTime() > (new Date(row.datetime_end)).getTime()){
                         continue;
                     }
                     row.datetime_start = toUnixTime(row.datetime_start);
