@@ -226,6 +226,7 @@ router.patch('/:id', async (ctx, next) => {
 router.delete('/:id', async (ctx, next) => {
     const userID = await util.verify(ctx);
     if(userID){
+        await db.query('delete from interested where meatup_id = $1 and user_id = $2', [ctx.params.id, userID]);
         const result = await db.query('delete from meatup where id = $1', [ctx.params.id]);
         if(result.rowCount > 0){
             ctx.response.status = 200;
